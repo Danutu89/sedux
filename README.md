@@ -2,6 +2,13 @@
 
 A powerful state management library for Svelte applications that combines Redux-like patterns with Svelte's reactivity system.
 
+> ⚠️ **Warning**
+> - This library is currently in beta stage
+> - Documentation is still under development
+> - Some features may contain bugs
+> - API might change without prior notice
+> - Please report any issues on our GitHub repository
+
 ## Table of Contents
 
 1. [Overview](#overview)
