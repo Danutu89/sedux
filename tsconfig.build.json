@@ -1,0 +1,23 @@
+{
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"sourceMap": true,
+		"strict": true,
+		"moduleResolution": "NodeNext",
+		"module": "NodeNext",
+		"target": "ES2020",
+		"declaration": true,
+		"declarationMap": true,
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"verbatimModuleSyntax": true,
+		"ignoreDeprecations": "5.0"
+	},
+	"include": ["src/**/*", "src/**/*.svelte"],
+	"exclude": ["node_modules", "dist", ".svelte-kit", "./src/prepare.js"]
+}

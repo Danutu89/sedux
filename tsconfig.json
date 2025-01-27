@@ -1,0 +1,25 @@
+{
+	"extends": "./.svelte-kit/tsconfig.json",
+	"compilerOptions": {
+		"allowJs": true,
+		"checkJs": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"skipLibCheck": true,
+		"sourceMap": true,
+		"strict": true,
+		"moduleResolution": "NodeNext",
+		"module": "NodeNext",
+		"target": "ES2020",
+		"verbatimModuleSyntax": true,
+		"ignoreDeprecations": "5.0",
+		"types": ["svelte"],
+		"paths": {
+			"$lib": ["./src/lib"],
+			"$lib/*": ["./src/lib/*"]
+		}
+	},
+	"include": ["src/**/*", "src/**/*.svelte", "src/**/*.d.ts"],
+	"exclude": ["node_modules", "dist", "./src/prepare.js"]
+}
