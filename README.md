@@ -58,13 +58,13 @@ Sedux is a state management solution that brings Redux-like patterns to Svelte w
 
 ```bash
 # Using npm
-npm install @navitech/edux
+npm install @sedux/svelte
 
 # Using yarn
-yarn add @navitech/sedux
+yarn add @sedux/svelte
 
 # Using pnpm
-pnpm add @navitech/sedux
+pnpm add @sedux/svelte
 ```
 
 ## Quick Start
@@ -73,7 +73,7 @@ Here's a basic counter example to get you started:
 
 ````svelte
 <script lang="ts">
-import { Sedux, createSlicer, dispatch, select } from '@navitech/sedux';
+import { Sedux, createSlicer, dispatch, select } from '@sedux/svelte';
 
 // 1. Create a slice of state
 const counterSlice = createSlicer({
@@ -120,7 +120,7 @@ function handleAddAmount(amount: number) {
 
 
 // 1. Import Sedux
-import { Sedux } from '@navitech/sedux';
+import { Sedux } from '@sedux/svelte';
 
 // 2. Wrap your app
 <Sedux>
@@ -146,7 +146,7 @@ Sedux provides several ways to manage your application state:
 #### Basic Store
 
 ```typescript
-import { storex, select } from "@navitech/sedux";
+import { storex, select } from "@sedux/svelte";
 
 // Create a store
 const store = storex({ count: 0 });
@@ -161,7 +161,7 @@ $count; // Reactive value
 #### State Slices
 
 ```typescript
-import { createSlicer } from "@navitech/sedux";
+import { createSlicer } from "@sedux/svelte";
 
 interface CounterState {
 	value: number;
@@ -220,7 +220,7 @@ timedDispatch({ type: "increment" }, 5, "counter"); // After 5 minutes
 Selectors are functions that select and transform state data:
 
 ```typescript
-import { select, dynamicSelect } from "@navitech/sedux";
+import { select, dynamicSelect } from "@sedux/svelte";
 
 // Basic selector
 const count = select(store, (state) => state.value);
@@ -239,7 +239,7 @@ $userById("123"); // Dynamic access
 Interceptors provide a way to handle side effects and transform actions:
 
 ```typescript
-import { createSmartInterceptor, addInterceptor } from "@navitech/sedux";
+import { createSmartInterceptor, addInterceptor } from "@sedux/svelte";
 
 // Create an interceptor
 const loggingInterceptor = createSmartInterceptor(async (payload, api) => {
@@ -266,7 +266,7 @@ loggingInterceptor.rejected = (error, api) => {
 Listeners allow you to react to actions:
 
 ```typescript
-import { addListener, addOnceListener } from "@navitech/sedux";
+import { addListener, addOnceListener } from "@sedux/svelte";
 
 // Persistent listener
 const { destroy } = addListener("increment", (action) => {
@@ -381,7 +381,7 @@ Redux DevTools integration is automatic when you wrap your app with `Sedux`:
 
 ```svelte
 <script>
-import { Sedux } from '@navitech/sedux';
+import { Sedux } from '@sedux/svelte';
 </script>
 
 <Sedux>
@@ -404,7 +404,7 @@ Features available in DevTools:
 The toolkit provides a powerful RTK Query-like API integration:
 
 ```typescript
-import { createApi, baseQuery } from "@navitech/sedux";
+import { createApi, baseQuery } from "@sedux/svelte";
 
 const api = createApi({
 	baseQuery: baseQuery("https://api.example.com"),
@@ -569,7 +569,7 @@ const api = createApi({
 The toolkit provides enhanced slice creation with additional features:
 
 ```typescript
-import { createSlice } from "@navitech/sedux";
+import { createSlice } from "@sedux/svelte";
 
 const [counterSlice, actions, store] = createSlice({
 	name: "counter",
@@ -697,7 +697,7 @@ graph TD
 #### Store Functions
 
 ```typescript
-import { storex, select, dynamicSelect } from "@navitech/sedux";
+import { storex, select, dynamicSelect } from "@sedux/svelte";
 
 // Create a store
 const store = storex<State>(initialState);
@@ -713,7 +713,7 @@ const dynamicValue = selector("path.to.value");
 #### Action Dispatching
 
 ```typescript
-import { dispatch, timedDispatch } from "@navitech/sedux";
+import { dispatch, timedDispatch } from "@sedux/svelte";
 
 // Immediate dispatch
 await dispatch(
@@ -738,7 +738,7 @@ timedDispatch(
 #### Event System
 
 ```typescript
-import { addListener, addOnceListener } from "@navitech/sedux";
+import { addListener, addOnceListener } from "@sedux/svelte";
 
 // Add persistent listener
 const { destroy } = addListener("actionType", (action) => {
@@ -754,7 +754,7 @@ addOnceListener(["actionType1", "actionType2"], (action) => {
 #### Interceptors
 
 ```typescript
-import { createSmartInterceptor, addInterceptor } from "@navitech/sedux";
+import { createSmartInterceptor, addInterceptor } from "@sedux/svelte";
 
 const interceptor = createSmartInterceptor(async (payload, api) => {
 	// Handle action
@@ -766,7 +766,7 @@ addInterceptor("actionType", interceptor, "pre");
 #### State Slices
 
 ```typescript
-import { createSlicer, createSlicerAsync, createSlicerToolkit } from "@navitech/sedux";
+import { createSlicer, createSlicerAsync, createSlicerToolkit } from "@sedux/svelte";
 
 // Synchronous slice
 const slice = createSlicer({
@@ -799,7 +799,7 @@ const toolkitSlice = createSlicerToolkit({
 #### Utility Functions
 
 ```typescript
-import { waitUntilSliceInitialized, waitUntilWindowLoaded } from "@navitech/sedux";
+import { waitUntilSliceInitialized, waitUntilWindowLoaded } from "@sedux/svelte";
 
 // Wait for slice
 await waitUntilSliceInitialized("sliceName");
@@ -924,7 +924,7 @@ interceptor.rejected = (error, api) => {
 // tsconfig.json
 {
   "compilerOptions": {
-    "types": ["@navitech/sedux"]
+    "types": ["@sedux/svelte"]
   }
 }
 ```
@@ -961,7 +961,7 @@ const slice = createSlicer<State>({
 
 ```svelte
 <script lang="ts">
-import { Sedux, createSlicer, dispatch, select } from '@navitech/sedux';
+import { Sedux, createSlicer, dispatch, select } from '@sedux/svelte';
 
 const counterSlice = createSlicer({
 	name: 'counter',
@@ -993,7 +993,7 @@ const count = select(counterSlice, state => state.value);
 
 ```typescript
 // api.ts
-import { createApi, baseQuery } from "@navitech/sedux";
+import { createApi, baseQuery } from "@sedux/svelte";
 
 interface Todo {
 	id: number;
@@ -1110,7 +1110,7 @@ async function handleSubmit() {
 
 ```typescript
 // authSlice.ts
-import { createSlice } from "@navitech/sedux";
+import { createSlice } from "@sedux/svelte";
 
 interface AuthState {
 	user: User | null;
@@ -1202,7 +1202,7 @@ Sedux provides a powerful WebSocket integration with features like:
 - Type-safe message handling
 
 ```typescript
-import { createWebSocketApi } from '@navitech/sedux';
+import { createWebSocketApi } from '@sedux/svelte';
 
 const useWebSocket = createWebSocketApi({
   reducerPath: 'websocket',
