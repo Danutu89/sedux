@@ -102,8 +102,8 @@ export const baseQuery: BaseQuery =
 					...mergedHeaders,
 					...(!isGetRequest
 						? {
-								"Content-Type": "application/json",
-						  }
+							"Content-Type": "application/json",
+						}
 						: {}),
 				},
 			});
@@ -173,7 +173,7 @@ const createCacheWatcher = (cacheAdapter: CacheAdapter) => {
 				if (data.expire === Infinity) return;
 				if (
 					data && data.lastUpdated + data.expire <
-						Date.now() &&
+					Date.now() &&
 					data.autoRefresh
 				) {
 					invalidation[data.tag]();
@@ -374,12 +374,12 @@ export const createApi: CreateApi = ({
 							const now = Date.now();
 							if (
 								cacheAdapter.read(endpointName, finalCacheKey).lastUpdated +
-									cacheAdapter.read(endpointName, finalCacheKey).expire <
+								cacheAdapter.read(endpointName, finalCacheKey).expire <
 								now
 							) {
 								cacheAdapter.remove(endpointName, finalCacheKey);
 							} else if (cacheAdapter.read(endpointName, finalCacheKey).data) {
-								api.dispatch(actions[endpointName].hydrate({data: cacheAdapter.read(endpointName, finalCacheKey).data}));
+								api.dispatch(actions[endpointName].hydrate({ data: cacheAdapter.read(endpointName, finalCacheKey).data }));
 							}
 						}
 					}
@@ -388,16 +388,21 @@ export const createApi: CreateApi = ({
 				}
 
 				if (endpoint.onOptimisticUpdate) {
-					optimisticBackup[endpointName] = api.getState(endpointName).data;
-					const optimisticData = endpoint.onOptimisticUpdate(
-						api.getState(endpointName).data,
-						payload,
-						{
-							...api,
-							context,
-						}
-					);
-					api.dispatch(actions[endpointName].optimistic(optimisticData));
+					try {
+						optimisticBackup[endpointName] = api.getState(reducerPath)[endpointName].data;
+						const optimisticData = endpoint.onOptimisticUpdate(
+							api.getState(reducerPath)[endpointName].data,
+							payload,
+							{
+								...api,
+								context,
+							}
+						);
+						api.dispatch(actions[endpointName].optimistic(optimisticData));
+					} catch (error) {
+						console.log(error)
+					}
+
 				}
 
 				if (endpoint.onStart) {
@@ -432,8 +437,8 @@ export const createApi: CreateApi = ({
 						return transformResponse
 							? await transformResponse({}, response)
 							: defaults?.transformResponse
-							? await defaults.transformResponse({}, response)
-							: response;
+								? await defaults.transformResponse({}, response)
+								: response;
 					}
 
 					if (
@@ -456,8 +461,8 @@ export const createApi: CreateApi = ({
 				const transformedResponse = transformResponse
 					? transformResponse(json, response)
 					: defaults?.transformResponse
-					? defaults.transformResponse(json, response)
-					: json;
+						? defaults.transformResponse(json, response)
+						: json;
 
 				if (endpoint?.cache?.key) {
 					const cacheKey = typeof endpoint?.cache?.key === "function" ? endpoint?.cache?.key(...payload) : endpoint?.cache?.key;
@@ -503,8 +508,8 @@ export const createApi: CreateApi = ({
 				const transformedError = transformError
 					? await transformError(parsedError)
 					: defaults?.transformError
-					? await defaults.transformError(parsedError)
-					: parsedError;
+						? await defaults.transformError(parsedError)
+						: parsedError;
 
 				if (endpoint.onOptimisticUpdate) {
 					api.dispatch(
@@ -548,10 +553,9 @@ export const createApi: CreateApi = ({
 	const createThunkName: ThunkName = <T extends string>(
 		endpointName: string
 	) => {
-		return `use${
-			(endpointName.charAt(0).toUpperCase() +
+		return `use${(endpointName.charAt(0).toUpperCase() +
 				endpointName.slice(1)) as Capitalize<T>
-		}Query`;
+			}Query`;
 	};
 
 	const thunks: Thunks<any> = Object.keys(api.endpoints).reduce(
@@ -563,9 +567,9 @@ export const createApi: CreateApi = ({
 					enabled?: boolean;
 					lastParams?: any;
 				} = {
-					enabled: false,
-					lastParams: null,
-				}
+						enabled: false,
+						lastParams: null,
+					}
 			) => {
 				const endpoint = api.endpoints[endpointName] as Endpoint;
 				if (initialData && !isPromise(initialData)) {
@@ -595,7 +599,7 @@ export const createApi: CreateApi = ({
 					};
 				}
 
-				
+
 
 				const dispatcher: ThunkDispatcher<any, any> = (async (...args) => {
 					if (endpoint.tag) {
@@ -658,139 +662,139 @@ export const createApi: CreateApi = ({
 
 			thunk.unwrap =
 				(fetch?: any) =>
-				async (...payload: any) => {
-					const endpoint = api.endpoints[endpointName] as Endpoint;
-					let response: any;
+					async (...payload: any) => {
+						const endpoint = api.endpoints[endpointName] as Endpoint;
+						let response: any;
 
-					if (endpoint.mock) {
-						if (endpoint.mock.ok === false) {
-							return {
-								status: "failed",
-								data: null,
-								error: endpoint.mock.error,
-							};
-						}
-						response = {
-							ok: endpoint.mock.ok || true,
-							status: endpoint.mock.status || 200,
-							headers: {
-								get: () => "application/json",
-							},
-							json: async () => endpoint.mock?.data,
-						};
-					} else {
-						//@ts-ignore
-						const query = endpoint.query(...payload);
-
-						try {
-							response = await baseQuery(query, fetch);
-						} catch (error) {
-							let parsedError = error;
-							if (endpoint.parseError) {
-								parsedError = endpoint.parseError(error, response);
-							} else if (defaults?.parseError) {
-								parsedError = defaults.parseError(error, response);
+						if (endpoint.mock) {
+							if (endpoint.mock.ok === false) {
+								return {
+									status: "failed",
+									data: null,
+									error: endpoint.mock.error,
+								};
 							}
-
-							if (endpoint.transformError) {
-								parsedError = await endpoint.transformError(parsedError);
-							} else if (defaults?.transformError) {
-								parsedError = await defaults.transformError(parsedError);
-							}
-							return {
-								status: "failed",
-								data: null,
-								error: parsedError,
+							response = {
+								ok: endpoint.mock.ok || true,
+								status: endpoint.mock.status || 200,
+								headers: {
+									get: () => "application/json",
+								},
+								json: async () => endpoint.mock?.data,
 							};
-						}
-
-						if (response.status === 204) {
-							const data = endpoint.transformResponse
-								? await endpoint.transformResponse({}, response)
-								: defaults?.transformResponse
-								? await defaults.transformResponse({}, response)
-								: response;
-							return {
-								status: "completed",
-								data,
-								error: "",
-							};
-						}
-
-						if (
-							!response.headers
-								.get("content-type")
-								?.includes("application/json")
-						) {
-							const error = await response.text();
-							let parsedError = error;
-
-							if (endpoint.parseError) {
-								parsedError = endpoint.parseError(error, response);
-							} else if (defaults?.parseError) {
-								parsedError = defaults.parseError(error, response);
-							}
-
-							if (endpoint.transformError) {
-								parsedError = await endpoint.transformError(parsedError);
-							} else if (defaults?.transformError) {
-								parsedError = await defaults.transformError(parsedError);
-							}
-							return {
-								status: "failed",
-								data: null,
-								error: parsedError,
-							};
-						}
-					}
-
-					const json = await response.json();
-
-					if (!response.ok) {
-						let error = "";
-						if (endpoint.parseError) {
-							error = endpoint.parseError(json, response);
-						} else if (defaults?.parseError) {
-							error = defaults.parseError(json, response);
 						} else {
-							if (json.non_field_errors) {
-								error = json.non_field_errors[0];
-							} else if (json.details) {
-								error = json.details[0];
-							} else if (json.detail) {
-								error = json.detail;
-							} else if (json instanceof Array) {
-								error = json[0];
-							} else {
-								const key = Object.keys(json)[0];
-								error = `${key} ${json[key][0]}`;
+							//@ts-ignore
+							const query = endpoint.query(...payload);
+
+							try {
+								response = await baseQuery(query, fetch);
+							} catch (error) {
+								let parsedError = error;
+								if (endpoint.parseError) {
+									parsedError = endpoint.parseError(error, response);
+								} else if (defaults?.parseError) {
+									parsedError = defaults.parseError(error, response);
+								}
+
+								if (endpoint.transformError) {
+									parsedError = await endpoint.transformError(parsedError);
+								} else if (defaults?.transformError) {
+									parsedError = await defaults.transformError(parsedError);
+								}
+								return {
+									status: "failed",
+									data: null,
+									error: parsedError,
+								};
+							}
+
+							if (response.status === 204) {
+								const data = endpoint.transformResponse
+									? await endpoint.transformResponse({}, response)
+									: defaults?.transformResponse
+										? await defaults.transformResponse({}, response)
+										: response;
+								return {
+									status: "completed",
+									data,
+									error: "",
+								};
+							}
+
+							if (
+								!response.headers
+									.get("content-type")
+									?.includes("application/json")
+							) {
+								const error = await response.text();
+								let parsedError = error;
+
+								if (endpoint.parseError) {
+									parsedError = endpoint.parseError(error, response);
+								} else if (defaults?.parseError) {
+									parsedError = defaults.parseError(error, response);
+								}
+
+								if (endpoint.transformError) {
+									parsedError = await endpoint.transformError(parsedError);
+								} else if (defaults?.transformError) {
+									parsedError = await defaults.transformError(parsedError);
+								}
+								return {
+									status: "failed",
+									data: null,
+									error: parsedError,
+								};
 							}
 						}
-						let parsedError = error;
-						if (endpoint.transformError) {
-							parsedError = await endpoint.transformError(error);
-						} else if (defaults?.transformError) {
-							parsedError = await defaults.transformError(error);
+
+						const json = await response.json();
+
+						if (!response.ok) {
+							let error = "";
+							if (endpoint.parseError) {
+								error = endpoint.parseError(json, response);
+							} else if (defaults?.parseError) {
+								error = defaults.parseError(json, response);
+							} else {
+								if (json.non_field_errors) {
+									error = json.non_field_errors[0];
+								} else if (json.details) {
+									error = json.details[0];
+								} else if (json.detail) {
+									error = json.detail;
+								} else if (json instanceof Array) {
+									error = json[0];
+								} else {
+									const key = Object.keys(json)[0];
+									error = `${key} ${json[key][0]}`;
+								}
+							}
+							let parsedError = error;
+							if (endpoint.transformError) {
+								parsedError = await endpoint.transformError(error);
+							} else if (defaults?.transformError) {
+								parsedError = await defaults.transformError(error);
+							}
+							return {
+								status: "failed",
+								data: null,
+								error: parsedError,
+							};
 						}
+
+						const transformedResponse = endpoint.transformResponse
+							? await endpoint.transformResponse(json, response)
+							: defaults?.transformResponse
+								? await defaults.transformResponse(json, response)
+								: json;
+
 						return {
-							status: "failed",
-							data: null,
-							error: parsedError,
+							status: "completed",
+							data: transformedResponse,
+							error: "",
 						};
-					}
-
-					const transformedResponse = endpoint.transformResponse
-						? await endpoint.transformResponse(json, response)
-						: defaults?.transformResponse
-						? await defaults.transformResponse(json, response)
-						: json;
-
-					return {
-						status: "completed",
-						data: transformedResponse,
-						error: "",
 					};
-				};
 			//@ts-ignore
 			acc[name] = thunk;
 			return acc;
@@ -803,13 +807,17 @@ export const createApi: CreateApi = ({
 			endpointName: keyof typeof api.endpoints,
 			callback: (draft: any) => any
 		) => {
-			const endpointState = store[endpointName];
-			if (endpointState.status === "completed") {
-				dispatchToSlicer(
-					actions[endpointName].optimistic(
-						callback(store[endpointName].data)
-					)
-				);
+			try {
+				const endpointState = store.value[endpointName];
+				if (endpointState.status === "completed") {
+					dispatchToSlicer(
+						actions[endpointName].optimistic(
+							callback(endpointState.data)
+						)
+					);
+				}
+			} catch (error) {
+				console.log(error)
 			}
 		},
 	};

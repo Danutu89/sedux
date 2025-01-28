@@ -80,7 +80,7 @@ const interceptorCatcher: InterceptorCatcher = async (action) => {
 		dispatchGlobal: <T>(_action: GeneralAction<T>, name: string) =>
 			dispatch(_action, name),
 		getState: (name) => {
-			return mainStore.value[name ?? (action.name as string)].state.value;
+			return mainStore.value[name || (action.name as string)].state.value;
 		},
 	};
 
