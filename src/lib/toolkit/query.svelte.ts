@@ -351,7 +351,7 @@ export const createApi: CreateApi = ({
 		Object.keys(api.endpoints).forEach((endpointName) => {
 			const endpoint = api.endpoints[endpointName] as Endpoint;
 			const { transformError, transformResponse } = endpoint;
-			const context: Record<string, any> = {};
+			let context: Record<string, any> = {};
 			let optimisticBackup: Record<string, any> = {};
 
 			const interceptor = createSmartInterceptor(async (payload, api) => {
@@ -395,7 +395,10 @@ export const createApi: CreateApi = ({
 							payload,
 							{
 								...api,
-								context,
+								setContext: (data) => {
+									context = {...context, ...data}
+								},
+								getContext: () => context
 							}
 						);
 						api.dispatch(actions[endpointName].optimistic(optimisticData));
@@ -408,7 +411,10 @@ export const createApi: CreateApi = ({
 				if (endpoint.onStart) {
 					endpoint.onStart(payload, {
 						...api,
-						context,
+						setContext: (data) => {
+							context = {...context, ...data}
+						},
+						getContext: () => context
 					});
 				}
 
@@ -488,12 +494,18 @@ export const createApi: CreateApi = ({
 				if (endpoint.onSuccess) {
 					endpoint.onSuccess(transformedResponse, {
 						...api,
-						context,
+						setContext: (data) => {
+							context = {...context, ...data}
+						},
+						getContext: () => context
 					});
 				} else if (defaults?.onSuccess) {
 					defaults.onSuccess(transformedResponse, {
 						...api,
-						context,
+						setContext: (data) => {
+							context = {...context, ...data}
+						},
+						getContext: () => context
 					});
 				}
 
@@ -522,12 +534,18 @@ export const createApi: CreateApi = ({
 				if (endpoint.onError) {
 					endpoint.onError(transformedError, {
 						...api,
-						context,
+						setContext: (data) => {
+							context = {...context, ...data}
+						},
+						getContext: () => context
 					});
 				} else if (defaults?.onError) {
 					defaults.onError(transformedError, {
 						...api,
-						context,
+						setContext: (data) => {
+							context = {...context, ...data}
+						},
+						getContext: () => context
 					});
 				}
 

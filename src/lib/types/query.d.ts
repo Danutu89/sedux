@@ -41,7 +41,8 @@ type EndpointBuilt<T extends any[] = any[]> = {
 			dispatch: InterceptorApi["dispatch"];
 			dispatchGlobal: InterceptorApi["dispatchGlobal"];
 			getState: InterceptorApi["getState"];
-			context: Record<string, any>;
+			setContext: (data: any) => void;
+			getContext: () => any
 		}
 	) => void;
 	onError?: (
@@ -50,7 +51,8 @@ type EndpointBuilt<T extends any[] = any[]> = {
 			dispatch: InterceptorApi["dispatch"];
 			dispatchGlobal: InterceptorApi["dispatchGlobal"];
 			getState: InterceptorApi["getState"];
-			context: Record<string, any>;
+				setContext: (data: any) => void;
+			getContext: () => any
 		}
 	) => void;
 	onStart?: (
@@ -59,7 +61,8 @@ type EndpointBuilt<T extends any[] = any[]> = {
 			dispatch: InterceptorApi["dispatch"];
 			dispatchGlobal: InterceptorApi["dispatchGlobal"];
 			getState: InterceptorApi["getState"];
-			context: Record<string, any>;
+				setContext: (data: any) => void;
+			getContext: () => any
 		}
 	) => void;
 	onOptimisticUpdate?: (
@@ -69,7 +72,8 @@ type EndpointBuilt<T extends any[] = any[]> = {
 			dispatch: InterceptorApi["dispatch"];
 			dispatchGlobal: InterceptorApi["dispatchGlobal"];
 			getState: InterceptorApi["getState"];
-			context: Record<string, any>;
+				setContext: (data: any) => void;
+			getContext: () => any
 		}
 	) => any;
 	parseError?: (data: any, response: Response) => any;
@@ -98,7 +102,8 @@ type Endpoint = {
 			dispatch: InterceptorApi["dispatch"];
 			dispatchGlobal: InterceptorApi["dispatchGlobal"];
 			getState: InterceptorApi["getState"];
-			context: Record<string, any>;
+			setContext: (data: any) => void;
+			getContext: () => any
 		}
 	) => void;
 	onError?: (
@@ -107,7 +112,8 @@ type Endpoint = {
 			dispatch: InterceptorApi["dispatch"];
 			dispatchGlobal: InterceptorApi["dispatchGlobal"];
 			getState: InterceptorApi["getState"];
-			context: Record<string, any>;
+				setContext: (data: any) => void;
+				getContext: () => any
 		}
 	) => void;
 	onStart?: (
@@ -116,7 +122,8 @@ type Endpoint = {
 			dispatch: InterceptorApi["dispatch"];
 			dispatchGlobal: InterceptorApi["dispatchGlobal"];
 			getState: InterceptorApi["getState"];
-			context: Record<string, any>;
+			setContext: (data: any) => void;
+						getContext: () => any
 		}
 	) => void;
 	onOptimisticUpdate?: (
@@ -126,7 +133,8 @@ type Endpoint = {
 			dispatch: InterceptorApi["dispatch"];
 			dispatchGlobal: InterceptorApi["dispatchGlobal"];
 			getState: InterceptorApi["getState"];
-			context: Record<string, any>;
+			setContext: (data: any) => void;
+			getContext: () => any
 		}
 	) => any;
 	parseError?: (data: any, response?: Response) => any;
@@ -355,7 +363,8 @@ type CreateApiOptions = {
 				dispatch: InterceptorApi["dispatch"];
 				dispatchGlobal: InterceptorApi["dispatchGlobal"];
 				getState: InterceptorApi["getState"];
-				context: Record<string, any>;
+				getContext: () => any;
+				setContext: (data: any) => void;
 			}
 		) => void;
 		onError?: (
@@ -364,7 +373,8 @@ type CreateApiOptions = {
 				dispatch: InterceptorApi["dispatch"];
 				dispatchGlobal: InterceptorApi["dispatchGlobal"];
 				getState: InterceptorApi["getState"];
-				context: Record<string, any>;
+				getContext: () => any;
+				setContext: (data: any) => void;
 			}
 		) => void;
 		parseError?: (data: any, response: Response) => any;
