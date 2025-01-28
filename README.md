@@ -601,6 +601,59 @@ actions.increment();
 actions.addAmount(5);
 ```
 
+### Search Parameters Integration
+
+Sedux provides built-in support for syncing state with URL search parameters, allowing you to:
+- Persist specific state values in the URL
+- Control which fields are included/excluded
+- Handle complex data types with base64 encoding
+- Custom value parsing
+
+```typescript
+const [slice, actions, store] = createSlice({
+  name: 'filters',
+  initialState: {
+    modal: {
+      opened: false
+    },
+    search: '',
+    filters: {
+      category: 'all',
+      price: { min: 0, max: 100 }
+    }
+  },
+  reducers: {
+    setModal: (action: ActionWithPayload<boolean>, state) => ({
+      ...state,
+      modal: { opened: action.payload }
+    }),
+    setSearch: (action: ActionWithPayload<string>, state) => ({
+      ...state,
+      search: action.payload
+    })
+  },
+  searchParams: {
+    enabled: true,
+    // Specify which paths to include in URL
+    include: ['modal.opened', 'search', 'filters'],
+    // Exclude specific nested paths
+    exclude: ['filters.price'],
+    // Control when values should be added to URL
+    shouldAppend: (value, path) => {
+      if (path === 'search') return value.length > 0;
+      return true;
+    },
+    // Custom value parsing (optional)
+    parseValue: (value, path) => {
+      if (path === 'modal.opened') return value === 'true';
+      return JSON.parse(value);
+    },
+    // Navigation function (required for SvelteKit)
+    goto: (url) => goto(url)
+  }
+});
+```
+
 ### Toolkit Exports
 
 ```typescript
