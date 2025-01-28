@@ -2,6 +2,8 @@
 
 A powerful state management library for Svelte applications that combines Redux-like patterns with Svelte's reactivity system.
 
+This library is compatible with svelte 5 only
+
 > ⚠️ **Warning**
 > - This library is currently in beta stage
 > - Documentation is still under development
@@ -116,7 +118,7 @@ function handleAddAmount(amount: number) {
 
 ### Initialization
 
-```typescript
+
 // 1. Import Sedux
 import { Sedux } from '@navitech/sedux';
 
@@ -925,10 +927,10 @@ const count = select(counterSlice, state => state.value);
 
 <div>
 	<h1>Count: {$count}</h1>
-	<button on:click={() => dispatch({ type: 'increment' }, 'counter')}>
+	<button onclick={() => dispatch({ type: 'increment' }, 'counter')}>
 		Increment
 	</button>
-	<button on:click={() => dispatch({ type: 'decrement' }, 'counter')}>
+	<button onclick={() => dispatch({ type: 'decrement' }, 'counter')}>
 		Decrement
 	</button>
 </div>
@@ -1010,7 +1012,7 @@ async function handleSubmit() {
 </script>
 
 <div>
-	<form on:submit|preventDefault={handleSubmit}>
+	<form onsubmit={handleSubmit}>
 		<input
 			bind:value={newTodoTitle}
 			placeholder="What needs to be done?"
@@ -1029,7 +1031,7 @@ async function handleSubmit() {
 					<input
 						type="checkbox"
 						checked={todo.completed}
-						on:change={() => toggleTodo({
+						onchange={() => toggleTodo({
 							id: todo.id,
 							completed: !todo.completed
 						})}
