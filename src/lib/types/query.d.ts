@@ -87,7 +87,7 @@ type EndpointBuilt<T extends any[] = any[]> = {
 	};
 	cache?: {
 		ttl?: ((...args: Parameters<typeof query>) => number);
-		key?: ((...args: Parameters<typeof query>) => string);
+		key?: ((...args: Parameters<typeof query>) => string) | string;
 		autoRefresh?: ((...args: Parameters<typeof query>) => boolean);
 	};
 }
@@ -148,7 +148,7 @@ type Endpoint = {
 	};
 	cache?: {
 		ttl?: ((...args: T) => number);
-		key?: ((...args: T) => string);
+		key?: ((...args: T) => string) | string;
 		autoRefresh?: ((...args: T) => boolean);
 	};
 }

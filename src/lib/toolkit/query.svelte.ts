@@ -212,7 +212,7 @@ export const createApi: CreateApi = ({
 		});
 
 		//check for the endpoints, and if they are empty and there is in cache, fulfill them
-		
+
 	}
 
 	// onDestroy(() => {
@@ -361,10 +361,9 @@ export const createApi: CreateApi = ({
 				try {
 					if (endpoint?.cache?.key) {
 						const cacheKey = typeof endpoint?.cache?.key === "function" ? endpoint?.cache?.key(...payload) : endpoint?.cache?.key;
-						const finalCacheKey = typeof endpoint?.cache?.key === "function" ? cacheKey : composeCacheKey(cacheKey, payload);
+						const finalCacheKey = cacheKey;
 						const ttl = endpoint.cache.ttl?.(payload) || Infinity;
 						const autoRefresh = endpoint.cache.autoRefresh?.(payload) || false;
-						console.log(!cacheAdapter.read(endpointName, finalCacheKey), 'cache read', endpointName, finalCacheKey)
 						if (!cacheAdapter.read(endpointName, finalCacheKey)) {
 							cacheAdapter.write(endpointName, finalCacheKey, {
 								data: null,
@@ -401,7 +400,7 @@ export const createApi: CreateApi = ({
 							{
 								...api,
 								setContext: (data) => {
-									context = {...context, ...data}
+									context = { ...context, ...data }
 								},
 								getContext: () => context
 							}
@@ -417,7 +416,7 @@ export const createApi: CreateApi = ({
 					endpoint.onStart(payload, {
 						...api,
 						setContext: (data) => {
-							context = {...context, ...data}
+							context = { ...context, ...data }
 						},
 						getContext: () => context
 					});
@@ -477,7 +476,7 @@ export const createApi: CreateApi = ({
 
 				if (endpoint?.cache?.key) {
 					const cacheKey = typeof endpoint?.cache?.key === "function" ? endpoint?.cache?.key(...payload) : endpoint?.cache?.key;
-					const finalCacheKey = typeof endpoint?.cache?.key === "function" ? cacheKey : composeCacheKey(cacheKey, payload);
+					const finalCacheKey = cacheKey;
 					const ttl = endpoint.cache.ttl?.(payload) || Infinity;
 					const autoRefresh = endpoint.cache.autoRefresh?.(payload) || false;
 					cacheAdapter.write(endpointName, finalCacheKey, {
@@ -500,7 +499,7 @@ export const createApi: CreateApi = ({
 					endpoint.onSuccess(transformedResponse, {
 						...api,
 						setContext: (data) => {
-							context = {...context, ...data}
+							context = { ...context, ...data }
 						},
 						getContext: () => context
 					});
@@ -508,7 +507,7 @@ export const createApi: CreateApi = ({
 					defaults.onSuccess(transformedResponse, {
 						...api,
 						setContext: (data) => {
-							context = {...context, ...data}
+							context = { ...context, ...data }
 						},
 						getContext: () => context
 					});
@@ -540,7 +539,7 @@ export const createApi: CreateApi = ({
 					endpoint.onError(transformedError, {
 						...api,
 						setContext: (data) => {
-							context = {...context, ...data}
+							context = { ...context, ...data }
 						},
 						getContext: () => context
 					});
@@ -548,7 +547,7 @@ export const createApi: CreateApi = ({
 					defaults.onError(transformedError, {
 						...api,
 						setContext: (data) => {
-							context = {...context, ...data}
+							context = { ...context, ...data }
 						},
 						getContext: () => context
 					});
@@ -577,7 +576,7 @@ export const createApi: CreateApi = ({
 		endpointName: string
 	) => {
 		return `use${(endpointName.charAt(0).toUpperCase() +
-				endpointName.slice(1)) as Capitalize<T>
+			endpointName.slice(1)) as Capitalize<T>
 			}Query`;
 	};
 
@@ -595,6 +594,35 @@ export const createApi: CreateApi = ({
 					}
 			) => {
 				const endpoint = api.endpoints[endpointName] as Endpoint;
+				const now = new Date();
+
+				if (typeof api.endpoints[endpointName].cache?.key === 'string' && typeof window !== 'undefined') {
+					const cacheEntry = cacheAdapter.read(endpointName, api.endpoints[endpointName].cache?.key);
+					if (cacheAdapter.read(endpointName, api.endpoints[endpointName].cache.key)?.data && (cacheAdapter.read(endpointName, api.endpoints[endpointName].cache.key).expire && cacheAdapter.read(endpointName, api.endpoints[endpointName].cache.key).expire !== Infinity) &&
+						cacheAdapter.read(endpointName, api.endpoints[endpointName].cache.key).lastUpdated +
+						cacheAdapter.read(endpointName, api.endpoints[endpointName].cache.key).expire <
+						now) {
+						dispatchToSlicer(
+							actions[endpointName].hydrate({
+								status: 'completed',
+								data: cacheEntry.data,
+								error: null,
+							})
+						)
+					}else if (cacheAdapter.read(endpointName, api.endpoints[endpointName].cache.key)?.data && (cacheEntry?.expire === Infinity || !cacheEntry.expire)) {
+						dispatchToSlicer(
+							actions[endpointName].hydrate({
+								status: 'completed',
+								data: cacheEntry.data,
+								error: null,
+							})
+						)
+					}
+
+				}
+
+
+
 				if (initialData && !isPromise(initialData)) {
 					dispatchToSlicer(actions[endpointName].hydrate(initialData));
 				} else if (initialData && isPromise(initialData)) {
