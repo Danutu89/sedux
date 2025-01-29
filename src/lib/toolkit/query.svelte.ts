@@ -170,7 +170,8 @@ const createCacheWatcher = (cacheAdapter: CacheAdapter) => {
 		cacheAdapter.getEndpoints().forEach((endpointName) => {
 			cacheAdapter.getKeys(endpointName).forEach((cacheKey) => {
 				const data = cacheAdapter.read(endpointName, cacheKey);
-				if (data.expire === Infinity) return;
+				if (!data) return;
+				if (data?.expire === Infinity || !data?.expiry) return;
 				if (
 					data && data.lastUpdated + data.expire <
 					Date.now() &&
@@ -209,7 +210,9 @@ export const createApi: CreateApi = ({
 				clearInterval(cacheWatcher);
 			}
 		});
+
 		//check for the endpoints, and if they are empty and there is in cache, fulfill them
+		
 	}
 
 	// onDestroy(() => {
@@ -361,6 +364,7 @@ export const createApi: CreateApi = ({
 						const finalCacheKey = typeof endpoint?.cache?.key === "function" ? cacheKey : composeCacheKey(cacheKey, payload);
 						const ttl = endpoint.cache.ttl?.(payload) || Infinity;
 						const autoRefresh = endpoint.cache.autoRefresh?.(payload) || false;
+						console.log(!cacheAdapter.read(endpointName, finalCacheKey), 'cache read', endpointName, finalCacheKey)
 						if (!cacheAdapter.read(endpointName, finalCacheKey)) {
 							cacheAdapter.write(endpointName, finalCacheKey, {
 								data: null,
@@ -373,6 +377,7 @@ export const createApi: CreateApi = ({
 						if (cacheAdapter.read(endpointName, finalCacheKey)) {
 							const now = Date.now();
 							if (
+								(cacheAdapter.read(endpointName, finalCacheKey).expire && cacheAdapter.read(endpointName, finalCacheKey).expire !== Infinity) &&
 								cacheAdapter.read(endpointName, finalCacheKey).lastUpdated +
 								cacheAdapter.read(endpointName, finalCacheKey).expire <
 								now
