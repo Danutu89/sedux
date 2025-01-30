@@ -4,16 +4,29 @@ import type { ActionWithPayload, Slicer } from "./slicer.d";
 import type { Storex } from "./store.d";
 import type { CreateAsyncThunk, Thunk } from "./thunks.d";
 
+
+export type Simplify<T> = T extends any[] | Date
+    ? T
+    : {
+            [K in keyof T]: T[K];
+        } & {};
+
+export type SimplifyThunk<T> = T extends (...args: any[]) => any ? {
+	(...args: Parameters<T>): ReturnType<T>;
+} & {[K in keyof T]: T[K]} & {}: T;
+
+
+
 interface Reducers<S> {
 	[key: string]: Reducer<S, ActionWithPayload<any>>;
 }
 
 type Dispatch = <T>(payload?: T) => ActionWithPayload<T>;
 
-type Dispatchers<S, K extends Reducers<S>> = Record<
-	keyof K,
-	Dispatch | Thunk<any, any>
->;
+type Dispatchers<S, K extends Reducers<S>> = {
+    [P in keyof K]: (payload?: Simplify<Parameters<K[P]>[1]['payload']>) => void;
+};
+
 
 type PathImpl<T, Key extends keyof T> =
   Key extends string
@@ -56,7 +69,7 @@ interface CreateSlice {
         P extends Record<string, Reducer<T>>
     >(
         options: CreateSliceOptions<T, K, P>
-    ): [Slicer<T>, Dispatchers<T, K>, Storex<T>];
+    ): [Slicer<T>, Simplify<Dispatchers<T, K>>, Storex<T>];
 }
 
 export declare function createSlice<
@@ -65,4 +78,4 @@ export declare function createSlice<
 	P extends Record<string, Reducer<T>>
 >(
 	options: CreateSliceOptions<T, K, P>
-): [Slicer<T>, Dispatchers<T, K>, Storex<T>];
+): [Slicer<T>, Simplify<Dispatchers<T, K>>, Storex<T>];
