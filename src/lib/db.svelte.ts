@@ -1,6 +1,5 @@
 import { mainStore } from "./store.svelte.js";
-import type { Storex, Value } from "./types/store.js";
-import type { SyncDB, SyncDBMainState } from "./types/persist.js";
+import type { Hydrate, Sync, SyncDB, SyncDBMainState } from "./types/persist.js";
 
 const DB_NAME = "sedux";
 const VERSION_KEY = "sedux_db_version";
@@ -73,77 +72,23 @@ const checkIfQueryToolkit = (value: any) => {
 	});
 };
 
-export const syncDb: SyncDB = async <T>(name: string, value: T) => {
+export const syncStorage: Sync = async (name, value, adapter) => {
 	if (!isBrowser) return;
 
 	const store = mainStore.value;
 	if (!(name in store)) {
-		return { error: { message: `Logic name "${name}" not valid.`, code: 'INVALID_STORE' }};
+		throw { error: { message: `Logic name "${name}" not valid.`, code: 'INVALID_STORE' }};
 	}
 
 	const { persist } = store[name];
 	if (!persist) return;
 
-	const storeName = typeof persist === "string" ? persist : "default";
-
 	try {
-		const db = await connectDB({ stores: [storeName] });
-
-		return new Promise((resolve, reject) => {
-			const tx = db.transaction(storeName, "readwrite");
-			const objectStore = tx.objectStore(storeName);
-
-			tx.oncomplete = () => {
-				db.close();
-				resolve();
-			};
-
-			tx.onerror = () => {
-				db.close();
-				resolve();
-			};
-
-			const timestamp = Date.now();
-			let record;
-
-			// Determine the type and structure of data
-			if (value && typeof value === 'object') {
-				if ('channels' in value) {
-					// WebSocket toolkit type
-					record = {
-						id: name,
-						_timestamp: timestamp,
-						_type: 'websocket',
-						channels: (value as any).channels
-					};
-				} else if (checkIfQueryToolkit(value)) {
-					// REST API toolkit type
-					record = {
-						id: name,
-						_timestamp: timestamp,
-						_type: 'rest',
-						endpoints: value
-					};
-				} else {
-					// Regular state type
-					record = {
-						id: name,
-						_timestamp: timestamp,
-						_type: 'regular',
-						state: value
-					};
-				}
-			}
-
-			if (record) {
-				objectStore.put(record);
-			}
-		});
-
+		await adapter.write(name, value);
 	} catch (error) {
-		return {
+		throw {
 			error: {
-				message: 'Failed to sync with IndexedDB',
+				message: 'Failed to sync with storage',
 				code: 'SYNC_FAILED',
 				details: error instanceof Error ? error.message : String(error)
 			}
@@ -151,7 +96,7 @@ export const syncDb: SyncDB = async <T>(name: string, value: T) => {
 	}
 };
 
-export const syncDbMainState: SyncDBMainState = async (name: string) => {
+export const hydrateFromStorage: Hydrate = async (name, adapter) => {
 	if (!isBrowser) return;
 
 	const store = mainStore.value;
@@ -160,60 +105,17 @@ export const syncDbMainState: SyncDBMainState = async (name: string) => {
 	const { persist } = store[name];
 	if (!persist) return;
 
-	const storeName = typeof persist === "string" ? persist : "default";
 
 	try {
-		const db = await connectDB({ stores: [storeName] });
+		const present = await adapter.hasKey(name);
+		if (!present) return;
+		const value = await adapter.read(name);
+		if (value) {
+			mainStore.value[name].state.set(value);
+		}
+		// const db = await connectDB({ stores: [storeName] });
 		
-		return new Promise((resolve, reject) => {
-			const tx = db.transaction(storeName, "readonly");
-			const objectStore = tx.objectStore(storeName);
-			
-			const request = objectStore.get(name);
-
-			request.onsuccess = () => {
-				const record = request.result;
-				
-				if (record) {
-					switch (record._type) {
-						case 'websocket':
-							mainStore.value[name].state.set({
-								channels: record.channels
-							});
-							break;
-
-						case 'rest':
-							// Set the state directly with the stored structure
-							mainStore.value[name].state.set(record);
-							break;
-
-						case 'regular':
-							mainStore.value[name].state.set({
-								state: {
-									default: record.state
-								}
-							});
-							break;
-					}
-				} else {
-					// Initialize empty state if no record found
-					mainStore.value[name].state.set({
-						state: {
-							default: {}
-						}
-					});
-				}
-
-				db.close();
-				resolve(undefined);
-			};
-
-			request.onerror = () => {
-				console.error("Error reading from database");
-				db.close();
-				reject(new Error("Failed to read from database"));
-			};
-		});
+		
 	} catch (error) {
 		console.error("Failed to sync main state:", error);
 		throw error;

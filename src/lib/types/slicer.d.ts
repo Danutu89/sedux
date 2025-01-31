@@ -1,4 +1,5 @@
 import type { Hydrate, Sync } from "./persist.d";
+import type { MaybePromise } from "./query.d";
 import type { Reducer } from "./reducer.d";
 import type { Storex } from "./store.d";
 
@@ -14,6 +15,15 @@ export interface PureAction extends Action {
 
 export interface ActionWithPayload<T> extends Action {
 	payload?: T extends ActionWithPayload<any> ? T["payload"] : T;
+}
+
+export interface StorageAdapter {
+	read: (name: string) => MaybePromise<any>;
+	write: (name: string, value: any) => MaybePromise<void>;
+	remove: (name: string) => MaybePromise<void>;
+	clear: () => MaybePromise<void>;
+	getKeys: () => MaybePromise<string[]>;
+	hasKey: (name: string) => MaybePromise<boolean>;
 }
 
 export type ActionVoid = () => Action;
@@ -32,8 +42,7 @@ export type SlicerFactory = <T, A>(
 	reducer: Reducer<T>,
 	name: string,
 	state?: Storex<A>,
-	persist?: boolean | string,
-	type?: "localstorage" | "session" | "indexeddb" | "custom",
+	persist?: StorageAdapter,
 	storageHandler?: {
 		sync: Sync;
 		hydrate: Hydrate;
@@ -45,8 +54,7 @@ export type SlicerToolkitFactory = <T>(
 	reducers: Reducer<T>,
 	initialState: T,
 	thunks: () => void,
-	persist?: boolean | string,
-	type?: "localstorage" | "session" | "indexeddb"
+	persist?: StorageAdapter,
 ) => {
 	store: Storex<T>;
 	timedDispatch: (
@@ -72,8 +80,7 @@ export declare function createSlicerToolkit<T>(
 	reducers: Reducer<T>,
 	initialState: T,
 	thunks: () => void,
-	persist?: boolean | string,
-	type?: "localstorage" | "session"
+	persist?: StorageAdapter,
 ): {
 	store: Slicer<T>;
 	timedDispatch: (
@@ -88,8 +95,7 @@ export declare function createSlicer<T, A>(
 	reducer: Reducer<T>,
 	name: string,
 	state: Storex<A>,
-	persist?: boolean | string,
-	session?: "localstorage" | "session"
+	persist?: StorageAdapter,
 ): Slicer<T>;
 
 export declare function createSlicerAsync<T, A>(
@@ -97,10 +103,5 @@ export declare function createSlicerAsync<T, A>(
 	reducer: Reducer<T>,
 	name: string,
 	state?: Storex<A>,
-	persist?: boolean | string,
-	type?: "localstorage" | "session" | "custom",
-	storageHandler?: {
-		sync: Sync;
-		hydrate: Hydrate;
-	}
+	persist?: StorageAdapter,
 ): Promise<Slicer<A>>;

@@ -1,3 +1,5 @@
+import type { StorageAdapter } from "./slicer.js";
+
 type ReconnectionStrategy = 'linear' | 'exponential' | 'fibonacci' | 'none';
 
 interface WebSocketConfig {
@@ -43,8 +45,7 @@ interface CreateWebSocketApi<T extends Channels> {
   reducerPath: string;
   channels: T;
   config: WebSocketConfig;
-  persist?: boolean | string;
-  type?: 'localstorage' | 'session' | 'indexeddb' ;
+  persist?: StorageAdapter;
 }
 
 interface WebSocketHook<T extends Channels> {

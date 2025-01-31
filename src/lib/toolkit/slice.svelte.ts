@@ -151,7 +151,9 @@ export const createSlice: CreateSlice = (options) => {
 	> = (state, action) => {
 		if (options.reducers[action.type as string]) {
 			const result = options.reducers[action.type as string](state, action);
-			syncSearchParams(result);
+			if (options.searchParams?.enabled) {
+				syncSearchParams(result);
+			}
 			return result;
 		}
 		return state;
@@ -161,7 +163,7 @@ export const createSlice: CreateSlice = (options) => {
 		reducer,
 		options.name,
 		store,
-		options.persisted
+		options.persist
 	);
 
 	const dispatchers: Dispatchers<

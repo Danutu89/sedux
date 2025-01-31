@@ -15,7 +15,6 @@ export const createWebSocketApi = <T extends Channels>({
   channels,
   config,
   persist,
-  type
 }: CreateWebSocketApi<T>): CreateWebSocketApiResult<T> => {
   let socket: WebSocket | null = null;
   let reconnectAttempts = 0;
@@ -217,7 +216,6 @@ export const createWebSocketApi = <T extends Channels>({
     initialState,
     () => {},
     persist,
-    type
   );
 
   const { dispatch: dispatchToSlicer, store } = slicer;

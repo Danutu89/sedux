@@ -3,6 +3,7 @@ import type { Reducer } from "./reducer.d";
 import type { ActionWithPayload, Slicer } from "./slicer.d";
 import type { Storex } from "./store.d";
 import type { CreateAsyncThunk, Thunk } from "./thunks.d";
+import type { StorageAdapter } from "./slicer.js";
 
 
 export type Simplify<T> = T extends any[] | Date
@@ -59,7 +60,7 @@ interface CreateSliceOptions<
     searchParams?: SearchParamsOptions<T>
     thunks?: ReturnType<CreateAsyncThunk>[];
     extraReducers?: P;
-    persisted?: boolean | string;
+    persist?: StorageAdapter;
 }
 
 interface CreateSlice {

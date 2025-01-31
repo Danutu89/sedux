@@ -1,4 +1,5 @@
 import type { InterceptorApi } from "./interceptor.d";
+import type { StorageAdapter } from "./slicer.js";
 
 export type Simplify<T> = T extends any[] | Date
     ? T
@@ -338,21 +339,13 @@ interface CacheAdapter {
 	getKeys: (endpointName: string) => string[];
 }
 
-interface StoreAdapter {
-	read: (endpointName: string, key: string) => any;
-	write: (endpointName: string, key: string, value: any) => void;
-	remove: (endpointName: string, key: string) => void;
-	clear: () => void;
-	getEndpoints: () => string[];
-	getKeys: (endpointName: string) => string[];
-}
+
 
 type CreateApiOptions = {
 	baseQuery: BaseQueryFn;
 	endpoints: Endpoints;
 	reducerPath: string;
-	persist?: boolean | string;
-	persistAdapter?: StoreAdapter;
+	persist?: StorageAdapter;
 	cacheAdapter?: CacheAdapter;
 	defaults?: {
 		transformResponse?: (data: any, response: Response) => any;

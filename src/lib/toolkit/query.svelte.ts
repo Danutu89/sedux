@@ -1,6 +1,5 @@
 import { request } from "../request.js";
 import { createSlicerToolkit } from "../slicer.svelte.js";
-import { select } from "../store.svelte.js";
 import { createSmartInterceptor } from "../interceptor.svelte.js";
 import type {
 	BaseQuery,

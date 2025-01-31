@@ -1,6 +1,6 @@
 {
   "name": "@sedux/svelte",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -68,6 +68,14 @@
     "./helpers/temp": {
       "types": "./dist/helpers/temp.d.ts",
       "default": "./dist/helpers/temp.js"
+    },
+    "./storage/localstorage": {
+      "types": "./dist/storage/localstorage.d.ts",
+      "default": "./dist/storage/localstorage.js"
+    },
+    "./storage/indexed-db": {
+      "types": "./dist/storage/indexed-db.d.ts",
+      "default": "./dist/storage/indexed-db.js"
     },
     "./toolkit": {
       "types": "./dist/toolkit/index.d.ts",

@@ -76,41 +76,34 @@ Here's a basic counter example to get you started:
 import { Sedux, createSlicer, dispatch, select } from '@sedux/svelte';
 
 // 1. Create a slice of state
-const counterSlice = createSlicer({
+const [counterSlice, counterActions] = createSlicer({
   name: 'counter',
-  initialState: { value: 0 },
+  initialState: { count: 0 },
   reducers: {
-    increment: (action, state) => ({ value: state.value + 1 }),
-    addAmount: (action: ActionWithPayload<number>, state) => ({
+    increment: (state, action) => ({ value: state.value + 1 }),
+    addAmount: (state ,action: ActionWithPayload<number>) => ({
       value: state.value + action.payload
     })
   }
 });
 
-// 2. Select state using a selector
-const count = select(counterSlice, state => state.value);
-
-// 3. Create action handlers
 function handleIncrement() {
-  dispatch({ type: 'increment' }, 'counter');
+  counterActions.increment();
 }
 
 function handleAddAmount(amount: number) {
-  dispatch({
-    type: 'addAmount',
-    payload: amount
-  }, 'counter');
+counterActions.addAmount(amount);
 }
 </script>
 
 <!-- 4. Wrap your app with Sedux -->
 <Sedux>
   <div>
-    <p>Current count: {$count}</p>
-    <button on:click={handleIncrement}>
+    <p>Current count: {counterSlice.value.count}</p>
+    <button onclick={handleIncrement}>
       Increment
     </button>
-    <button on:click={() => handleAddAmount(5)}>
+    <button onclick={() => handleAddAmount(5)}>
       Add 5
     </button>
   </div>
@@ -124,15 +117,6 @@ import { Sedux } from '@sedux/svelte';
 
 // 2. Wrap your app
 <Sedux>
-  <App />
-</Sedux>
-
-// 3. Optional configuration
-<Sedux
-  devTools={true}     // Enable/disable DevTools
-  persist={true}      // Enable global persistence
-  storage="local"     // Storage type
->
   <App />
 </Sedux>
 ````
@@ -152,10 +136,10 @@ import { storex, select } from "@sedux/svelte";
 const store = storex({ count: 0 });
 
 // Create a derived store
-const count = select(store, (state) => state.value);
+const count = $derived(store.value, (state) => state.count);
 
-// Use in component
-$count; // Reactive value
+// use in component
+count; // Reactive value
 ```
 
 #### State Slices
@@ -175,14 +159,12 @@ const counterSlice = createSlicer({
 		lastUpdated: new Date(),
 	} as CounterState,
 	reducers: {
-		increment: (action, state) => ({
+		increment: (state, action) => ({
 			...state,
 			value: state.value + 1,
 			lastUpdated: new Date(),
 		}),
 	},
-	// Optional persistence
-	persist: true,
 });
 ```
 
@@ -213,25 +195,6 @@ dispatch(
 
 // Timed Actions
 timedDispatch({ type: "increment" }, 5, "counter"); // After 5 minutes
-```
-
-### Selectors
-
-Selectors are functions that select and transform state data:
-
-```typescript
-import { select, dynamicSelect } from "@sedux/svelte";
-
-// Basic selector
-const count = select(store, (state) => state.value);
-
-// Dynamic selector
-const dynamicSelector = dynamicSelect(store);
-const userById = (id: string) => dynamicSelector(`users.${id}`);
-
-// Using in components
-$count; // Access value
-$userById("123"); // Dynamic access
 ```
 
 ### Interceptors
@@ -289,7 +252,7 @@ destroy(); // Remove listener when needed
 #### Async Slices
 
 ```typescript
-const userSlice = await createSlicerAsync({
+const [userSlice] = await createSlicerAsync({
 	name: "users",
 	initialState: {
 		data: [],
@@ -298,7 +261,7 @@ const userSlice = await createSlicerAsync({
 	},
 	reducers: {
 		setLoading: (action, state) => ({ ...state, loading: true }),
-		setData: (action: ActionWithPayload<User[]>, state) => ({
+		setData: (action: ActionWithPayload<user[]>, state) => ({
 			...state,
 			data: action.payload,
 			loading: false,
@@ -316,7 +279,7 @@ const userSlice = await createSlicerAsync({
 
 ```typescript
 // Using async thunks
-const fetchUsers = createAsyncThunk(
+const fetchusers = createAsyncThunk(
 	"users/fetch",
 	async () => {
 		const response = await fetch("/api/users");
@@ -326,7 +289,7 @@ const fetchUsers = createAsyncThunk(
 );
 
 // Usage
-const usersThunk = fetchUsers("users");
+const usersThunk = fetchusers("users");
 await usersThunk();
 ```
 
@@ -342,18 +305,9 @@ const persistedSlice = createSlicer({
 	reducers: {
 		/*...*/
 	},
-	persist: true, // or 'localStorage'
+	persist: localStorageAdapter, // or 'IndexedDBAdapter'
 });
 
-// Session Storage
-const sessionSlice = createSlicer({
-	name: "session",
-	initialState: { value: 0 },
-	reducers: {
-		/*...*/
-	},
-	persist: "sessionStorage",
-});
 
 // Custom Storage
 const customSlice = createSlicerAsync({
@@ -362,16 +316,7 @@ const customSlice = createSlicerAsync({
 	reducers: {
 		/*...*/
 	},
-	persist: true,
-	type: "custom",
-	storageHandler: {
-		sync: async (name, value) => {
-			// Custom sync logic
-		},
-		hydrate: async (name) => {
-			// Custom hydration logic
-		},
-	},
+	persist: {}, //imeplement the StorageAdapter interface	
 });
 ```
 
@@ -421,22 +366,34 @@ const api = createApi({
 				autoRefresh: true,
 			},
 		},
+		getPost: {
+			query: (id: string) => ({
+				url: `/post/${id}`,
+				method: "GET",
+			}),
+			transformResponse: (response) => response.data,
+			cache: {
+				ttl: () => 5000,
+				key: ([id]) => `post-${id}`,
+				autoRefresh: true,
+			},
+		},
 	}),
 	reducerPath: "api",
 });
 
 // Regular usage in components
-const [fetchPosts, posts] = api.UseGetPostsQuery();
+const [fetchPosts, posts] = api.useGetPostsQuery();
 
 // Using unwrap for direct API calls
-const makeRequest = api.UseGetPostsQuery.unwrap();
+const makeRequest = api.useGetPostsQuery.unwrap();
 
 // Basic unwrap usage
 const result = await makeRequest();
 // Returns: { data: T | null, error: any | null, status: "idle" | "loading" | "completed" | "failed" }
 
 // With custom fetch implementation
-const customFetch = api.UseGetPostsQuery.unwrap(myCustomFetch);
+const customFetch = api.useGetPostsQuery.unwrap(myCustomFetch);
 const result = await customFetch();
 
 // Handling results
@@ -462,16 +419,16 @@ interface UnwrappedResult<T> {
 }
 
 // Each endpoint query hook provides an unwrap method
-const { UseGetPostsQuery } = api;
+const { useGetPostsQuery } = api;
 
 // Get the unwrapped function
-const makeRequest = UseGetPostsQuery.unwrap();
+const makeRequest = useGetPostsQuery.unwrap();
 
 // Usage with parameters
 const result = await makeRequest({ id: 1 });
 
 // With custom fetch implementation
-const customRequest = UseGetPostsQuery.unwrap((url, options) => {
+const customRequest = useGetPostsQuery.unwrap((url, options) => {
 	return customFetch(url, {
 		...options,
 		headers: {
@@ -538,7 +495,7 @@ Sedux provides sophisticated cache management:
 
 ```typescript
 const api = createApi({
-	endpoints: (builder) => ({
+	endpoints: () => ({
 		getPosts: {
 			query: () => ({ url: "/posts" }),
 			// Cache configuration
@@ -702,12 +659,9 @@ import { storex, select, dynamicSelect } from "@sedux/svelte";
 // Create a store
 const store = storex<State>(initialState);
 
-// Create a selector
-const value = select(store, (state) => state.value);
+// Create a derived
+const value = $derived(store.value, (state) => state);
 
-// Create a dynamic selector
-const selector = dynamicSelect(store);
-const dynamicValue = selector("path.to.value");
 ```
 
 #### Action Dispatching
@@ -796,18 +750,6 @@ const toolkitSlice = createSlicerToolkit({
 });
 ```
 
-#### Utility Functions
-
-```typescript
-import { waitUntilSliceInitialized, waitUntilWindowLoaded } from "@sedux/svelte";
-
-// Wait for slice
-await waitUntilSliceInitialized("sliceName");
-
-// Wait for window
-await waitUntilWindowLoaded();
-```
-
 ### Type Definitions
 
 ```typescript
@@ -842,19 +784,19 @@ interface ListenerDestroyable {
 	listener: Listener;
 	destroy: () => void;
 }
+
+//StorageAdapter interface
+interface StorageAdapter {
+	read: (name: string) => MaybePromise<any>;
+	write: (name: string, value: any) => MaybePromise<void>;
+	remove: (name: string) => MaybePromise<void>;
+	clear: () => MaybePromise<void>;
+	getKeys: () => MaybePromise<string[]>;
+	hasKey: (name: string) => MaybePromise<boolean>;
+}
 ```
 
 ## Error Handling
-
-### Action Errors
-
-```typescript
-try {
-	await dispatch({ type: "someAction" }, "sliceName");
-} catch (error) {
-	// Handle dispatch error
-}
-```
 
 ### API Errors
 
@@ -895,19 +837,19 @@ interceptor.rejected = (error, api) => {
 ### State Organization
 
 - Keep state slices small and focused
-- Use selectors for derived state
+- use selectors for derived state
 - Normalize complex data structures
 
 ### Performance
 
-- Use memoized selectors for expensive computations
+- use memoized selectors for expensive computations
 - Implement proper cleanup in interceptors and listeners
 - Leverage the cache system for API calls
 
 ### TypeScript
 
 - Define interfaces for your state
-- Use strict action typing
+- use strict action typing
 - Leverage generic constraints
 
 ### Testing
@@ -916,18 +858,6 @@ interceptor.rejected = (error, api) => {
 - Mock API calls in tests
 - Test interceptors independently
 
-## TypeScript Support
-
-### Configuration
-
-```typescript
-// tsconfig.json
-{
-  "compilerOptions": {
-    "types": ["@sedux/svelte"]
-  }
-}
-```
 
 ### Type Inference
 
@@ -961,9 +891,9 @@ const slice = createSlicer<State>({
 
 ```svelte
 <script lang="ts">
-import { Sedux, createSlicer, dispatch, select } from '@sedux/svelte';
+import { Sedux, createSlice, dispatch, select } from '@sedux/svelte';
 
-const counterSlice = createSlicer({
+const [counterSlice] = createSlice({
 	name: 'counter',
 	initialState: { value: 0 },
 	reducers: {
@@ -975,11 +905,11 @@ const counterSlice = createSlicer({
 	}
 });
 
-const count = select(counterSlice, state => state.value);
+const count = $derived(counterSlice.value, state => state.value);
 </script>
 
 <div>
-	<h1>Count: {$count}</h1>
+	<h1>Count: {count}</h1>
 	<button onclick={() => dispatch({ type: 'increment' }, 'counter')}>
 		Increment
 	</button>
@@ -1047,8 +977,8 @@ export const api = createApi({
 import { api } from './api';
 
 const [fetchTodos, todos] = api.useGetTodosQuery();
-const [addTodo] = api.useAddTodoMutation();
-const [toggleTodo] = api.useToggleTodoMutation();
+const [addTodo] = api.useAddTodoQuery();
+const [toggleTodo] = api.useToggleTodoQuery();
 
 let newTodoTitle = '';
 
@@ -1073,13 +1003,13 @@ async function handleSubmit() {
 		<button type="submit">Add Todo</button>
 	</form>
 
-	{#if $todos.loading}
+	{#if todos.status === 'loading'}
 		<p>Loading...</p>
-	{:else if $todos.error}
-		<p>Error: {$todos.error}</p>
+	{:else if todos.error}
+		<p>Error: {todos.error}</p>
 	{:else}
 		<ul>
-			{#each $todos.data as todo}
+			{#each todos.data as todo}
 				<li>
 					<input
 						type="checkbox"
@@ -1113,7 +1043,7 @@ async function handleSubmit() {
 import { createSlice } from "@sedux/svelte";
 
 interface AuthState {
-	user: User | null;
+	user: user | null;
 	token: string | null;
 	loading: boolean;
 	error: string | null;
@@ -1128,7 +1058,7 @@ const [authSlice, actions] = createSlice({
 		error: null,
 	} as AuthState,
 	reducers: {
-		setUser: (action: ActionWithPayload<User>, state) => ({
+		setuser: (action: ActionWithPayload<user>, state) => ({
 			...state,
 			user: action.payload,
 			error: null,
@@ -1159,7 +1089,7 @@ const [authSlice, actions] = createSlice({
 import { authSlice, actions } from './authSlice';
 import { api } from './api';
 
-const [login] = api.useLoginMutation();
+const [login] = api.useLoginQuery();
 
 let email = '';
 let password = '';
@@ -1168,7 +1098,7 @@ async function handleSubmit() {
 	try {
 		const result = await login({ email, password });
 		if (result.data) {
-			actions.setUser(result.data.user);
+			actions.setuser(result.data.user);
 			actions.setToken(result.data.token);
 		}
 	} catch (error) {
@@ -1177,7 +1107,7 @@ async function handleSubmit() {
 }
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form onsubmit={handleSubmit}>
 	<input
 		type="email"
 		bind:value={email}
@@ -1260,6 +1190,6 @@ const unsubscribe = ws.subscribe('chat', (message) => {
 });
 
 // Access channel state
-$chatChannel.messages    // Array of messages
-$chatChannel.lastMessage // Most recent message
+chatChannel.messages    // Array of messages
+chatChannel.lastMessage // Most recent message
 ```
