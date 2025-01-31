@@ -1,6 +1,6 @@
 {
   "name": "@sedux/svelte",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -36,7 +36,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://git.navitech.systems/navitech-systems/monorepo"
+    "url": "https://github.com/Danutu89/sedux"
   },
   "license": "MIT",
   "author": "Navitech Systems",
