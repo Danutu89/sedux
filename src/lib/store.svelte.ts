@@ -2,7 +2,7 @@ import { Queue } from "./helpers/queue.js";
 import type { Calls } from "./types/calls.js";
 import type { Listener } from "./types/listener.js";
 import type { Logic } from "./types/logic.js";
-import type { DynamicSelector, Selector, Storex } from "./types/store.js";
+import type { DynamicSelector, Storex } from "./types/store.js";
 import type { InterceptorStore } from "./types/interceptor.js";
 import type { Store as InternalStore } from "./types/internal.js";
 
@@ -77,6 +77,8 @@ const listenersStore = createMainStore<Listener[]>([]);
 
 const sessionStore = createMainStore<any>({});
 
+const slicesSyncedWithQuery = createMainStore<Record<string, (url: URLSearchParams) => void>>({});
+
 const internalStore = createMainStore<InternalStore>({
 	current: "",
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -113,6 +115,7 @@ export {
 	queue,
 	storex,
 	interceptors,
+	slicesSyncedWithQuery,
 	select,
 	dynamicSelect,
 	internalStore,

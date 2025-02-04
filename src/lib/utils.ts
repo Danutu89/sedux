@@ -1,4 +1,4 @@
-import { mainStore } from "./store.svelte.js";
+import { mainStore, slicesSyncedWithQuery } from "./store.svelte.js";
 export const waitUntilSliceInitialized = async (
 	name: string
 ): Promise<void> => {
@@ -12,3 +12,8 @@ export const waitUntilWindowLoaded = async (): Promise<void> => {
 		await new Promise((resolve) => setTimeout(resolve, 100));
 	}
 };
+
+export const hydrateSlicesFromSearchQuery = () => {
+	console.log('sda')
+	Object.values(slicesSyncedWithQuery.value).forEach((hydrateState) => hydrateState(new URLSearchParams(window.location.search)))
+}

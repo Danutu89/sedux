@@ -1,5 +1,5 @@
 import { createSlicer } from "../slicer.svelte.js";
-import { storex } from "../store.svelte.js";
+import { slicesSyncedWithQuery, storex } from "../store.svelte.js";
 import type { Reducer } from "../types/reducer.js";
 import type { ActionWithPayload } from "../types/slicer.js";
 import type { CreateSlice, Dispatchers, Path } from "../types/slice.js";
@@ -138,10 +138,12 @@ export const createSlice: CreateSlice = (options) => {
 		options.searchParams.goto(`?${searchParams.toString()}`);
 	}
 
-	if (typeof window !== 'undefined') {
-		if (options.searchParams?.enabled) {
-			hydrateState(new URLSearchParams(window.location.search));
-		}
+	if (typeof window !== 'undefined' && options.searchParams?.enabled) {
+		hydrateState(new URLSearchParams(window.location.search));
+		slicesSyncedWithQuery.update((val) => {
+			val[options.name] = hydrateState
+			return val;
+		})
 	}
 
 
@@ -165,6 +167,15 @@ export const createSlice: CreateSlice = (options) => {
 		store,
 		options.persist
 	);
+	slicer.destroy = () => {
+		slicer.destroy();
+		if (options.searchParams?.enabled) {
+			slicesSyncedWithQuery.update((val) => {
+				delete val[options.name];
+				return val;
+			})
+		}
+	}
 
 	const dispatchers: Dispatchers<
 		typeof options.initialState,

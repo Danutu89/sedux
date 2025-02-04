@@ -9,6 +9,14 @@ interface DevTools {
 		state: unknown,
 		options: { trace: boolean; serialize: boolean }
 	) => void;
+	listen: (
+		listener: (message: {
+			type: string;
+			payload: unknown;
+			source: string;
+			state: unknown;
+		}) => void
+	) => void;
 }
 
 interface Window {
@@ -23,19 +31,41 @@ declare global {
 
 let devTools: DevTools | null = null;
 
+const handleExtensionDispatch = (states: Record<string, any>) => {
+	mainStore.update((prevStates) => {
+		Object.keys(states).forEach((key) => {
+			if (prevStates[key]) {
+				prevStates[key].state.set(states[key]);
+			}
+		});
+		return prevStates;
+	})
+}
+
 /**
  * @returns void
  */
 export const initDevTools = (): void => {
 	const extension = (window as Window).__REDUX_DEVTOOLS_EXTENSION__;
-	if (extension) {
-		devTools = extension.connect({ trace: true });
+	if (extension && extension.connect) {
+		devTools = extension?.connect({ trace: true });
+		window.addEventListener('message', (e) => {
+			if (e.data.source === '@devtools-extension') {
+				try {
+					if (e.data.type === 'DISPATCH' && e.data.payload.type === 'JUMP_TO_ACTION') {
+						handleExtensionDispatch(JSON.parse(e.data.state));
+					}
+				} catch (error) {
+					console.log(error)
+				}
+			}
+		});
 	}
 };
 
 export const destroyDevTools = (): void => {
 	if (devTools) {
-		devTools.disconnect();
+		devTools?.disconnect?.();
 	}
 };
 
