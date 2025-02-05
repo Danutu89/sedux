@@ -58,7 +58,7 @@ export const createSlice: CreateSlice = (options) => {
 			} catch (e) {
 				const pathParts = path.split('.');
 				let current = state;
-				
+
 				if (pathParts.length === 1 && typeof state[pathParts[0]] === 'object') {
 					//@ts-ignore
 					current[pathParts[0]] = value;
@@ -89,47 +89,56 @@ export const createSlice: CreateSlice = (options) => {
 			if (typeof obj !== 'object' || obj === null) return;
 
 			if (parentPath) {
-				if (options.searchParams?.exclude?.includes(parentPath as Path<typeof options.initialState>)) return;
-				if (options.searchParams?.include && options.searchParams?.include?.length > 0 && !options.searchParams?.include?.includes(parentPath as Path<typeof options.initialState>)) {
-					const hasIncludedChild = options.searchParams?.include?.some(includePath => 
+				const exactPath = parentPath as Path<typeof options.initialState>;
+				if (options.searchParams?.exclude?.includes(exactPath)) return;
+				if (options.searchParams?.include && options.searchParams?.include?.length > 0) {
+					// Check if the exact path or any of its children are included
+					const isPathIncluded = options.searchParams.include.some(includePath =>
+						includePath === exactPath ||
 						includePath.toString().startsWith(parentPath + '.')
 					);
-					if (!hasIncludedChild) return;
+					if (!isPathIncluded) return;
 				}
 			}
 
 			Object.entries(obj).forEach(([key, value]) => {
 				const currentPath = parentPath ? `${parentPath}.${key}` : key;
+				const exactCurrentPath = currentPath as Path<typeof options.initialState>;
 				const paramKey = `${options.name}.${currentPath}`;
 
 				if (value && typeof value === 'object') {
 					if (Array.isArray(value)) {
-						// Handle arrays by adding multiple entries with the same key
+						// Only process arrays if the exact path is included
 						searchParams.delete(paramKey);
 						value.forEach(item => {
 							if (typeof item === 'object') {
 								const base64Value = 'base64:' + btoa(JSON.stringify(item));
 								searchParams.append(paramKey, base64Value);
 							} else {
-								searchParams.append(paramKey, JSON.stringify(item));
+								searchParams.append(paramKey, item);
 							}
 						});
-					} else if (options.searchParams?.include?.includes(currentPath as Path<typeof options.initialState>)) {
-						// Handle objects by converting to base64
+					} else if (options.searchParams?.include?.includes(exactCurrentPath)) {
 						const base64Value = 'base64:' + btoa(JSON.stringify(value));
 						searchParams.set(paramKey, base64Value);
 					} else {
 						processObject(value, currentPath);
 					}
 				} else {
-					if (options.searchParams?.exclude?.includes(currentPath as Path<typeof options.initialState>)) return;
-					if (options.searchParams?.include && options.searchParams?.include?.length > 0 && !options.searchParams?.include?.includes(currentPath as Path<typeof options.initialState>)) return;
-					if (!options.searchParams?.shouldAppend(value, currentPath as Path<typeof options.initialState>)) {
+					if (options.searchParams?.exclude?.includes(exactCurrentPath)) return;
+					if (options.searchParams?.include &&
+						options.searchParams.include.length > 0 &&
+						!options.searchParams.include.includes(exactCurrentPath)) return;
+
+					if (!options.searchParams?.shouldAppend(value, exactCurrentPath)) {
 						searchParams.delete(paramKey);
 						return;
 					}
-
-					searchParams.set(paramKey, JSON.stringify(value));
+					if (typeof value === 'string') {
+						searchParams.set(paramKey, value)
+					} else {
+						searchParams.set(paramKey, JSON.stringify(value));
+					}
 				}
 			});
 		};
@@ -161,7 +170,7 @@ export const createSlice: CreateSlice = (options) => {
 		return state;
 	};
 	const slicer = createSlicer(
-		() => {},
+		() => { },
 		reducer,
 		options.name,
 		store,

@@ -14,6 +14,5 @@ export const waitUntilWindowLoaded = async (): Promise<void> => {
 };
 
 export const hydrateSlicesFromSearchQuery = () => {
-	console.log('sda')
 	Object.values(slicesSyncedWithQuery.value).forEach((hydrateState) => hydrateState(new URLSearchParams(window.location.search)))
 }
