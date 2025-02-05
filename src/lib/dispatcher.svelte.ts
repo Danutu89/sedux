@@ -80,7 +80,7 @@ const interceptorCatcher: InterceptorCatcher = async (action) => {
 		dispatchGlobal: <T>(_action: GeneralAction<T>, name: string) =>
 			dispatch(_action, name),
 		getState: (name) => {
-			return mainStore.value[name || (action.name as string)].state.value;
+			return $state.snapshot(mainStore.value[name || (action.name as string)].state.value);
 		},
 	};
 
@@ -105,12 +105,14 @@ const listenerCatcher: ListenerCatcher = (action) => {
 	if (action === null) return;
 	const listeners: Listener[] = listenersStore.value;
 	const deletetion: Listener[] = [];
-	console.log(listeners, 'listeners');
 
 	listeners.map((item: Listener) => {
 		if (typeof item.actionType === "object") {
 			//@ts-ignore
 			if (item.actionType.includes(action.type)) {
+				if (item?.name && item.name !== action.name) {
+					return;
+				}
 				try {
 					item.callback(action);
 					if (item.type === "once") deletetion.push(item);
@@ -121,6 +123,9 @@ const listenerCatcher: ListenerCatcher = (action) => {
 			}
 		} else {
 			if (item.actionType === action?.type) {
+				if (item?.name && item.name !== action.name) {
+					return;
+				}
 				try {
 					item.callback(action);
 					if (item.type === "once") deletetion.push(item);

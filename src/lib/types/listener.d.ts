@@ -2,6 +2,7 @@ import type { ActionWithPayload } from "./slicer.d";
 
 export interface Listener {
 	actionType: symbol | symbol[] | string | string[];
+	name?: string;
 	callback: Callback;
 	type?: "once" | "all" | null;
 	id: string;
@@ -17,17 +18,21 @@ export interface ListenerDestroyable {
 export type AddListener = (
 	actionType: symbol | symbol[] | string | string[],
 	callback: Callback,
+	name?: string,
 	customId?: string
 ) => ListenerDestroyable;
 
 export declare function addListener(
 	actionType: symbol | symbol[] | string | string[],
 	callback: Callback,
+	name?: string,
 	customId?: string
+
 ): ListenerDestroyable;
 
 export declare function addOnceListener(
 	actionType: symbol | symbol[] | string | string[],
 	callback: Callback,
+	name?: string,
 	customId?: string
 ): ListenerDestroyable;

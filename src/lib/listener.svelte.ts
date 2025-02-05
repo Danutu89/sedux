@@ -1,7 +1,7 @@
 import { listenersStore } from "./store.svelte.js";
 import type { AddListener, Listener } from "./types/listener.js";
 
-export const addListener: AddListener = (actionType, callback, customId) => {
+export const addListener: AddListener = (actionType, callback, name, customId) => {
 	const now = new Date();
 	const id =
 		now.getMilliseconds().toString() +
@@ -15,7 +15,7 @@ export const addListener: AddListener = (actionType, callback, customId) => {
 
 	if (check) throw new Error(`Listener with id ${finalId} already exists`);
 
-	const listener = { actionType, callback, id: finalId } as Listener;
+	const listener = { actionType, callback, id: finalId, name } as Listener;
 
 	listenersStore.update((prevState) => {
 		prevState.push(listener);
@@ -32,7 +32,7 @@ export const addListener: AddListener = (actionType, callback, customId) => {
 	};
 };
 
-export const addOnceListener: AddListener = (actionType, callback) => {
+export const addOnceListener: AddListener = (actionType, callback, name) => {
 	const now = new Date();
 	//create unique id for listener fomr milliseconds
 	const id =
@@ -51,6 +51,7 @@ export const addOnceListener: AddListener = (actionType, callback) => {
 		actionType,
 		callback,
 		type: "once",
+		name,
 		id: finalId,
 	} as Listener;
 
