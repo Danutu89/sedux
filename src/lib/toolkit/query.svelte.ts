@@ -363,7 +363,7 @@ export const createApi: CreateApi = ({
 						const finalCacheKey = cacheKey;
 						const ttl = endpoint.cache.ttl?.(payload) || Infinity;
 						const autoRefresh = endpoint.cache.autoRefresh?.(payload) || false;
-						if (!cacheAdapter.read(endpointName, finalCacheKey)) {
+						if (!cacheAdapter?.read(endpointName, finalCacheKey)) {
 							cacheAdapter.write(endpointName, finalCacheKey, {
 								data: null,
 								lastUpdated: Date.now(),
@@ -372,7 +372,7 @@ export const createApi: CreateApi = ({
 								tag: endpoint.tag!,
 							});
 						}
-						if (cacheAdapter.read(endpointName, finalCacheKey)) {
+						if (cacheAdapter?.read(endpointName, finalCacheKey)) {
 							const now = Date.now();
 							if (
 								(cacheAdapter.read(endpointName, finalCacheKey).expire && cacheAdapter.read(endpointName, finalCacheKey).expire !== Infinity) &&
@@ -596,8 +596,8 @@ export const createApi: CreateApi = ({
 				const now = new Date();
 
 				if (typeof api.endpoints[endpointName].cache?.key === 'string' && typeof window !== 'undefined') {
-					const cacheEntry = cacheAdapter.read(endpointName, api.endpoints[endpointName].cache?.key);
-					if (cacheAdapter.read(endpointName, api.endpoints[endpointName].cache.key)?.data && (cacheAdapter.read(endpointName, api.endpoints[endpointName].cache.key).expire && cacheAdapter.read(endpointName, api.endpoints[endpointName].cache.key).expire !== Infinity) &&
+					const cacheEntry = cacheAdapter?.read(endpointName, api.endpoints[endpointName].cache?.key);
+					if (cacheAdapter?.read(endpointName, api.endpoints[endpointName].cache.key)?.data && (cacheAdapter?.read(endpointName, api.endpoints[endpointName].cache.key).expire && cacheAdapter?.read(endpointName, api.endpoints[endpointName].cache.key).expire !== Infinity) &&
 						cacheAdapter.read(endpointName, api.endpoints[endpointName].cache.key).lastUpdated +
 						cacheAdapter.read(endpointName, api.endpoints[endpointName].cache.key).expire <
 						now) {
@@ -608,7 +608,7 @@ export const createApi: CreateApi = ({
 								error: null,
 							})
 						)
-					}else if (cacheAdapter.read(endpointName, api.endpoints[endpointName].cache.key)?.data && (cacheEntry?.expire === Infinity || !cacheEntry.expire)) {
+					}else if (cacheAdapter?.read(endpointName, api.endpoints[endpointName].cache.key)?.data && (cacheEntry?.expire === Infinity || !cacheEntry.expire)) {
 						dispatchToSlicer(
 							actions[endpointName].hydrate({
 								status: 'completed',
