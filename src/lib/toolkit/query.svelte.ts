@@ -363,26 +363,30 @@ export const createApi: CreateApi = ({
 						const finalCacheKey = cacheKey;
 						const ttl = endpoint.cache.ttl?.(payload) || Infinity;
 						const autoRefresh = endpoint.cache.autoRefresh?.(payload) || false;
-						if (!cacheAdapter?.read(endpointName, finalCacheKey)) {
-							cacheAdapter.write(endpointName, finalCacheKey, {
-								data: null,
-								lastUpdated: Date.now(),
-								expire: ttl,
-								autoRefresh: autoRefresh,
-								tag: endpoint.tag!,
-							});
-						}
-						if (cacheAdapter?.read(endpointName, finalCacheKey)) {
-							const now = Date.now();
-							if (
-								(cacheAdapter.read(endpointName, finalCacheKey).expire && cacheAdapter.read(endpointName, finalCacheKey).expire !== Infinity) &&
-								cacheAdapter.read(endpointName, finalCacheKey).lastUpdated +
-								cacheAdapter.read(endpointName, finalCacheKey).expire <
-								now
-							) {
-								cacheAdapter.remove(endpointName, finalCacheKey);
-							} else if (cacheAdapter.read(endpointName, finalCacheKey).data) {
-								api.dispatch(actions[endpointName].hydrate({ data: cacheAdapter.read(endpointName, finalCacheKey).data }));
+						if (typeof cacheAdapter.read !== 'function') {
+							console.warn('[sedux]: Cache adapter read function is not a function')
+						} else {
+							if (!cacheAdapter?.read(endpointName, finalCacheKey)) {
+								cacheAdapter.write(endpointName, finalCacheKey, {
+									data: null,
+									lastUpdated: Date.now(),
+									expire: ttl,
+									autoRefresh: autoRefresh,
+									tag: endpoint.tag!,
+								});
+							}
+							if (cacheAdapter?.read(endpointName, finalCacheKey)) {
+								const now = Date.now();
+								if (
+									(cacheAdapter.read(endpointName, finalCacheKey).expire && cacheAdapter.read(endpointName, finalCacheKey).expire !== Infinity) &&
+									cacheAdapter.read(endpointName, finalCacheKey).lastUpdated +
+									cacheAdapter.read(endpointName, finalCacheKey).expire <
+									now
+								) {
+									cacheAdapter.remove(endpointName, finalCacheKey);
+								} else if (cacheAdapter.read(endpointName, finalCacheKey).data) {
+									api.dispatch(actions[endpointName].hydrate({ data: cacheAdapter.read(endpointName, finalCacheKey).data }));
+								}
 							}
 						}
 					}
@@ -596,26 +600,30 @@ export const createApi: CreateApi = ({
 				const now = new Date();
 
 				if (typeof api.endpoints[endpointName].cache?.key === 'string' && typeof window !== 'undefined') {
-					const cacheEntry = cacheAdapter?.read(endpointName, api.endpoints[endpointName].cache?.key);
-					if (cacheAdapter?.read(endpointName, api.endpoints[endpointName].cache.key)?.data && (cacheAdapter?.read(endpointName, api.endpoints[endpointName].cache.key).expire && cacheAdapter?.read(endpointName, api.endpoints[endpointName].cache.key).expire !== Infinity) &&
-						cacheAdapter.read(endpointName, api.endpoints[endpointName].cache.key).lastUpdated +
-						cacheAdapter.read(endpointName, api.endpoints[endpointName].cache.key).expire <
-						now) {
-						dispatchToSlicer(
-							actions[endpointName].hydrate({
-								status: 'completed',
-								data: cacheEntry.data,
-								error: null,
-							})
-						)
-					}else if (cacheAdapter?.read(endpointName, api.endpoints[endpointName].cache.key)?.data && (cacheEntry?.expire === Infinity || !cacheEntry.expire)) {
-						dispatchToSlicer(
-							actions[endpointName].hydrate({
-								status: 'completed',
-								data: cacheEntry.data,
-								error: null,
-							})
-						)
+					if (typeof cacheAdapter?.read !== 'function') {
+						console.warn('[sedux]: Cache adapter read function is not a function')
+					} else {
+						const cacheEntry = cacheAdapter?.read(endpointName, api.endpoints[endpointName].cache?.key);
+						if (cacheAdapter?.read(endpointName, api.endpoints[endpointName].cache.key)?.data && (cacheAdapter?.read(endpointName, api.endpoints[endpointName].cache.key).expire && cacheAdapter?.read(endpointName, api.endpoints[endpointName].cache.key).expire !== Infinity) &&
+							cacheAdapter.read(endpointName, api.endpoints[endpointName].cache.key).lastUpdated +
+							cacheAdapter.read(endpointName, api.endpoints[endpointName].cache.key).expire <
+							now) {
+							dispatchToSlicer(
+								actions[endpointName].hydrate({
+									status: 'completed',
+									data: cacheEntry.data,
+									error: null,
+								})
+							)
+						} else if (cacheAdapter?.read(endpointName, api.endpoints[endpointName].cache.key)?.data && (cacheEntry?.expire === Infinity || !cacheEntry.expire)) {
+							dispatchToSlicer(
+								actions[endpointName].hydrate({
+									status: 'completed',
+									data: cacheEntry.data,
+									error: null,
+								})
+							)
+						}
 					}
 
 				}
